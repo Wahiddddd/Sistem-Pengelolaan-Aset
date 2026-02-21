@@ -49,9 +49,10 @@ Struktur database dirancang untuk mendukung relasi antara aset, kategori, dan lo
 * **Maintenance Logs**: Mencatat riwayat perbaikan yang terhubung ke setiap aset.
 
 ### Deskripsi Relasi Antar Tabel:
-* **Categories 1 : N Assets**: Satu kategori (misal: Elektronik) dapat menampung banyak aset, namun satu aset hanya memiliki satu kategori.
-* **Assets 1 : N Maintenance_logs**: Satu aset dapat memiliki riwayat pemeliharaan yang panjang seiring berjalannya waktu.
-* **Users N : M Roles (via Logic)**: Pengelolaan hak akses yang membedakan fitur Admin dan Teknisi.
+* **Categories 1 : N Assets**: Categories (1) : (N) Assets: Satu kategori dapat menampung berbagai aset, namun satu aset hanya terikat pada satu kategori melalui category_id.
+* **Assets 1 : N Maintenance_logs**: Setiap aset memiliki hubungan historis dengan banyak catatan log perbaikan yang terhubung melalui asset_id.
+* **Users (1) : (N) Maintenance_Logs**: Satu user (Teknisi) dapat bertanggung jawab atas banyak aktivitas pemeliharaan yang dicatat melalui user_id.
+* **Role Management (Logic-Based)**: Pengelolaan hak akses antara Admin dan Teknisi dilakukan melalui logika aplikasi (RBAC) berdasarkan kolom role pada tabel Users, memungkinkan skalabilitas fitur tanpa kompleksitas tabel tambahan.
 
 ## Schema Synchronization
 Sinkronisasi otomatis antara Java Entity dan Database menggunakan Hibernate Auto-DDL.
