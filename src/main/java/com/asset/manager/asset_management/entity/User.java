@@ -24,10 +24,14 @@ public class User {
     @Column(unique = true, nullable = false)
     private String nik;
 
+    @Column(unique = true, nullable = false)
     private String username;
+
+    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private UserRole role;
 
     private Integer failedAttempts = 0;

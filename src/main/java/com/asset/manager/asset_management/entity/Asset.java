@@ -30,7 +30,7 @@ public class Asset {
     private Integer maintenanceFrequency;
 
     @Enumerated(EnumType.STRING)
-    private com.asset.manager.asset_management.entity.AssetStatus status;
+    private AssetStatus status;
 
     private LocalDate nextMaintenanceDate;
 
