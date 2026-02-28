@@ -1,9 +1,15 @@
 package com.asset.manager.asset_management.DTO;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 //untuk menampilkan aset pada menu pagination nya
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class AssetSimpleResponse {
     private Long id; // Wajib ada agar saat diklik, sistem tahu ID mana yang mau dibuka detailnya
     private String serialNumber;

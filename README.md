@@ -1,4 +1,4 @@
-# Sistem Pengelolaan Aset (Asset Management System)
+﻿# Sistem Pengelolaan Aset (Asset Management System)
 
 Sistem Pengelolaan Aset adalah aplikasi berbasis web yang dirancang untuk membantu perusahaan dalam mengelola siklus hidup aset, mulai dari pendataan, monitoring status, hingga pencatatan log pemeliharaan secara otomatis dan terintegrasi.
 
@@ -15,7 +15,6 @@ Sistem ini dikembangkan untuk menyelesaikan masalah inventarisasi manual yang re
 - **Monitoring Teknisi**: Teknisi dapat mengubah status aset (In Maintenance/Broken) dan mengunggah bukti foto sebelum serta sesudah perbaikan.
 
 - **Pencatatan Log**: Setiap tindakan perbaikan tercatat di tabel log beserta biaya dan durasi pengerjaannya.
-
 
 ## Flow Business (Alur Bisnis)
 ### 1. Proses Registrasi dan Login
@@ -45,7 +44,7 @@ Struktur database dirancang untuk mendukung relasi antara aset, kategori, dan lo
 
 ### Detail Relasi:
 * **Users**: Menyimpan kredensial, role (Admin/Teknisi), dan status keamanan akun.
-* **Assets**: Berelasi dengan `categories` dan mencatat detail spesifik aset serta jadwal servis otomatis.
+* **Assets**: Berelasi dengan categories dan mencatat detail spesifik aset serta jadwal servis otomatis.
 * **Maintenance Logs**: Mencatat riwayat perbaikan yang terhubung ke setiap aset.
 
 ### Deskripsi Relasi Antar Tabel:
@@ -56,3 +55,37 @@ Struktur database dirancang untuk mendukung relasi antara aset, kategori, dan lo
 
 ## Schema Synchronization
 Sinkronisasi otomatis antara Java Entity dan Database menggunakan Hibernate Auto-DDL.
+
+---
+
+## 🚀 Update Terbaru (API Endpoints Tersedia)
+
+Sistem sekarang sudah dilengkapi dengan REST API Controllers untuk pengujian menggunakan Postman. Security (JWT) untuk sementara di-set *permit all* agar mempermudah testing.
+
+### 1. User API (/api/users)
+- POST / : Create User
+- GET / : Get All Users (Pagination)
+- GET /{id} : Get User by ID
+- PUT /{id} : Update User
+- DELETE /{id} : Delete User
+
+### 2. Category API (/api/categories)
+- POST / : Create Category
+- GET / : Get All Categories
+- GET /{id} : Get Category by ID
+- PUT /{id} : Update Category
+- DELETE /{id} : Delete Category
+
+### 3. Asset API (/api/assets)
+- POST / : Create Asset
+- GET / : Get All Assets (Pagination)
+- GET /{id} : Get Asset by ID
+- GET /due-maintenance : Get Assets Due for Maintenance
+- PUT /{id} : Update Asset
+- DELETE /{id} : Delete Asset
+
+### 4. Maintenance Log API (/api/maintenance)
+- POST /start/{assetId}/technician/{technicianId} : Start Maintenance
+- POST /finish/{assetId} : Finish Maintenance
+- POST /broken/{assetId} : Mark Asset as Broken
+- GET /asset/{assetId} : Get Maintenance History by Asset

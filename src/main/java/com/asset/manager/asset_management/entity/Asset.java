@@ -24,9 +24,15 @@ public class Asset {
     @Column(unique = true, nullable = false)
     private String serialNumber;
 
+    @Column(nullable = false)
     private String name;
+
     private String imagePath;
+
+    @Column(nullable = false)
     private LocalDate purchaseDate;
+
+    @Column(nullable = false)
     private Integer maintenanceFrequency;
 
     @Enumerated(EnumType.STRING)
