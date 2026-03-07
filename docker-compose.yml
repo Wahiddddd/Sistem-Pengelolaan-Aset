@@ -1,0 +1,27 @@
+services:
+  app:
+    build: .
+    container_name: asset-management-app
+    ports:
+      - "8085:8085"
+    environment:
+      - DB_URL=jdbc:mysql://db:3306/db_asset_management?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      - DB_USERNAME=root
+      - DB_PASSWORD=rootpassword
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    container_name: asset-management-db
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_DATABASE=db_asset_management
+      - MYSQL_ROOT_PASSWORD=rootpassword
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 10s
+      retries: 5
+      start_period: 30s
