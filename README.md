@@ -1,91 +1,118 @@
-﻿# Sistem Pengelolaan Aset (Asset Management System)
+﻿# 🏗️ Sistem Pengelolaan Aset (Asset Management System)
 
-Sistem Pengelolaan Aset adalah aplikasi berbasis web yang dirancang untuk membantu perusahaan dalam mengelola siklus hidup aset, mulai dari pendataan, monitoring status, hingga pencatatan log pemeliharaan secara otomatis dan terintegrasi.
+Sistem Pengelolaan Aset adalah aplikasi berbasis Spring Boot yang dirancang untuk membantu perusahaan dalam mengelola siklus hidup aset secara efisien, mulai dari pendataan, monitoring status, hingga pencatatan log pemeliharaan secara otomatis dan terintegrasi.
 
-## Analisa Kebutuhan Sistem
-Sistem ini dikembangkan untuk menyelesaikan masalah inventarisasi manual yang rentan terhadap kesalahan data dan keterlambatan pemeliharaan.
+---
 
-### Kebutuhan Fungsional:
-- **Manajemen User**: Sistem mendukung multi-role (Super Admin, Admin, dan Teknisi) dengan keamanan login (Auto-lock account setelah 5x gagal percobaan).
+## 🛠️ Tech Stack
 
-- **Manajemen Aset**: Admin dapat menambah, mengedit, dan mencari aset berdasarkan nomor seri unik.
+Aplikasi ini dibangun menggunakan teknologi modern untuk memastikan performa dan keamanan yang optimal:
 
-- **Otomatisasi Maintenance**: Sistem secara otomatis menghitung tanggal servis berikutnya berdasarkan frekuensi pemeliharaan yang diinput.
+- **Back-end:** Java 17, Spring Boot 4.0.3
+- **Security:** Spring Security & JSON Web Token (JWT)
+- **Database:** MySQL
+- **Migration:** Flyway (Database Version Control)
+- **Documentation:** Swagger/OpenAPI (TBA)
+- **Tools:** Maven, Lombok, Jakarta Validation
 
-- **Monitoring Teknisi**: Teknisi dapat mengubah status aset (In Maintenance/Broken) dan mengunggah bukti foto sebelum serta sesudah perbaikan.
+---
 
-- **Pencatatan Log**: Setiap tindakan perbaikan tercatat di tabel log beserta biaya dan durasi pengerjaannya.
+## 📋 Fitur Utama
 
-## Flow Business (Alur Bisnis)
-### 1. Proses Registrasi dan Login
-Sistem menggunakan keamanan berbasis NIK dan password, serta fitur penguncian akun otomatis jika gagal login lebih dari 5 kali.
-![Flowchart Login](flow_chart/Flow%20Chart(Register%20dan%20Login).drawio.png)
+- **Manajemen User (RBAC):** Dukungan multi-role (Super Admin, Admin, dan Teknisi) dengan fitur keamanan *Auto-lock account* setelah 5 kali gagal login.
+- **Manajemen Inventaris:** Admin dapat mengelola data aset, kategori, dan mencari aset berdasarkan nomor seri unik.
+- **Otomatisasi Jadwal Servis:** Sistem menghitung tanggal servis berikutnya secara otomatis berdasarkan frekuensi pemeliharaan.
+- **Dashboard Teknisi:** Teknisi dapat memperbarui status aset (*In Maintenance*, *Broken*, *Working*) dan mencatat detail perbaikan.
+- **History Maintenance:** Pencatatan log lengkap untuk setiap aset, mencakup biaya, durasi, dan teknisi yang bertanggung jawab.
+
+---
+
+## 📂 Struktur Proyek
+
+```text
+src/main/java/com/asset/manager/asset_management/
+├── config/             # Konfigurasi aplikasi (Security, Beans)
+├── controller/         # REST API Endpoints
+├── DTO/                # Data Transfer Objects untuk Request/Response
+├── entity/             # Java Persistence API (JPA) Entities
+├── exception/          # Global Exception Handling
+├── repository/         # Spring Data JPA Repositories
+├── security/           # JWT & Authentication Logic
+└── service/            # Business Logic Layer
+```
+
+---
+
+## 🔄 Flow Business (Alur Bisnis)
+
+Berikut adalah visualisasi alur kerja dalam sistem ini:
+
+### 1. Registrasi dan Login
+Sistem menggunakan keamanan berbasis NIK dan password, serta fitur penguncian akun otomatis.
+![Flowchart Login](flow_chart/Dashboard%20Teknisi%20(Maintenance)-Flow%20Bussiness%20(Register%20dan%20Login).drawio.png)
 
 ### 2. Manajemen Inventaris (Admin)
-Admin dapat menambahkan aset baru, di mana sistem akan otomatis menghitung tanggal servis berikutnya berdasarkan frekuensi pemeliharaan.
-![Flowchart Input Aset](flow_chart/Flow%20Chart(Admin%20(Input%20Aset)).drawio.png)
+Admin menambahkan aset baru dan sistem menghitung jadwal servis secara otomatis.
+![Flowchart Input Aset](flow_chart/Dashboard%20Teknisi%20(Maintenance)-Flow%20Chart(Admin%20(Input%20Aset)).drawio.png)
 
 ### 3. Monitoring & Update Aset (Admin)
-Fitur untuk mencari aset berdasarkan nomor seri dan melakukan pembaruan data.
-![Flowchart List Aset](flow_chart/Flow%20Chart(Admin(list%20aset)).drawio.png)
+Fitur untuk melihat daftar aset dan melakukan pembaruan data secara berkala.
+![Flowchart List Aset](flow_chart/Dashboard%20Teknisi%20(Maintenance)-Flow%20Chart(Admin(list%20aset)).drawio.png)
 
-### 4. Alur Kerja Pemeliharaan (Teknisi)
-Teknisi memproses aset yang membutuhkan servis, mencatat log pengerjaan, dan mengunggah bukti foto.
-![Flowchart Teknisi](flow_chart/Flow%20Chart(Teknisi).drawio.png)
+### 4. Laporan Maintenance (Admin)
+Admin dapat memantau laporan pemeliharaan aset dari semua teknisi.
+![Flowchart Laporan](flow_chart/Dashboard%20Teknisi%20(Maintenance)-Flow%20Chart(Admin(Laporan%20Maintenence))).drawio.png)
+
+### 5. Alur Kerja Pemeliharaan (Teknisi)
+Teknisi memproses aset yang membutuhkan servis dan mencatat riwayat pengerjaan.
+![Flowchart Teknisi](flow_chart/Dashboard%20Teknisi%20(Maintenance)-Flow%20Chart(Teknisi).drawio.png)
 
 ---
 
 ## 🗄️ Desain Database
 
-Struktur database dirancang untuk mendukung relasi antara aset, kategori, dan log pemeliharaan.
+Struktur database dirancang untuk mendukung relasi yang kompleks antara aset, kategori, dan log pemeliharaan.
 
-### Skema Database
-![Desain Database](flow_chart/Desain%20Database.drawio.png)
+![Desain Database](flow_chart/Desain%20Database.png)
 
-### Detail Relasi:
-* **Users**: Menyimpan kredensial, role (Admin/Teknisi), dan status keamanan akun.
-* **Assets**: Berelasi dengan categories dan mencatat detail spesifik aset serta jadwal servis otomatis.
-* **Maintenance Logs**: Mencatat riwayat perbaikan yang terhubung ke setiap aset.
-
-### Deskripsi Relasi Antar Tabel:
-* **Categories 1 : N Assets**: Categories (1) : (N) Assets: Satu kategori dapat menampung berbagai aset, namun satu aset hanya terikat pada satu kategori melalui category_id.
-* **Assets 1 : N Maintenance_logs**: Setiap aset memiliki hubungan historis dengan banyak catatan log perbaikan yang terhubung melalui asset_id.
-* **Users (1) : (N) Maintenance_Logs**: Satu user (Teknisi) dapat bertanggung jawab atas banyak aktivitas pemeliharaan yang dicatat melalui user_id.
-* **Role Management (Logic-Based)**: Pengelolaan hak akses antara Admin dan Teknisi dilakukan melalui logika aplikasi (RBAC) berdasarkan kolom role pada tabel Users, memungkinkan skalabilitas fitur tanpa kompleksitas tabel tambahan.
-
-## Schema Synchronization
-Sinkronisasi otomatis antara Java Entity dan Database menggunakan Hibernate Auto-DDL.
+### Relasi Antar Tabel:
+- **Categories 1 : N Assets**: Satu kategori dapat memiliki banyak aset.
+- **Assets 1 : N Maintenance Logs**: Satu aset memiliki riwayat banyak catatan pemeliharaan.
+- **Users 1 : N Maintenance Logs**: Satu teknisi dapat bertanggung jawab atas banyak log perbaikan.
 
 ---
 
-## 🚀 Update Terbaru (API Endpoints Tersedia)
+## 🚀 API Endpoints
 
-Sistem sekarang sudah dilengkapi dengan REST API Controllers untuk pengujian menggunakan Postman. Security (JWT) untuk sementara di-set *permit all* agar mempermudah testing.
+Aplikasi menyediakan RESTful API yang dapat diakses melalui endpoint berikut:
 
-### 1. User API (/api/users)
-- POST / : Create User
-- GET / : Get All Users (Pagination)
-- GET /{id} : Get User by ID
-- PUT /{id} : Update User
-- DELETE /{id} : Delete User
+### 1. User API (`/api/users`)
+- `POST /` : Registrasi User baru.
+- `GET /` : Daftar semua User (Pagination).
+- `PUT /{id}` : Update data User.
 
-### 2. Category API (/api/categories)
-- POST / : Create Category
-- GET / : Get All Categories
-- GET /{id} : Get Category by ID
-- PUT /{id} : Update Category
-- DELETE /{id} : Delete Category
+### 2. Category API (`/api/categories`)
+- `POST /` : Tambah Kategori baru.
+- `GET /` : Daftar semua Kategori.
 
-### 3. Asset API (/api/assets)
-- POST / : Create Asset
-- GET / : Get All Assets (Pagination)
-- GET /{id} : Get Asset by ID
-- GET /due-maintenance : Get Assets Due for Maintenance
-- PUT /{id} : Update Asset
-- DELETE /{id} : Delete Asset
+### 3. Asset API (`/api/assets`)
+- `POST /` : Tambah Aset baru.
+- `GET /due-maintenance` : Daftar aset yang mendekati jadwal servis.
+- `GET /{id}` : Detail Aset berdasarkan ID.
 
-### 4. Maintenance Log API (/api/maintenance)
-- POST /start/{assetId}/technician/{technicianId} : Start Maintenance
-- POST /finish/{assetId} : Finish Maintenance
-- POST /broken/{assetId} : Mark Asset as Broken
-- GET /asset/{assetId} : Get Maintenance History by Asset
+### 4. Maintenance API (`/api/maintenance`)
+- `POST /start/{assetId}/technician/{technicianId}` : Mulai proses perbaikan.
+- `POST /finish/{assetId}` : Selesaikan perbaikan dan catat log.
+- `POST /broken/{assetId}` : Tandai aset sebagai rusak total.
+
+---
+
+## ⚙️ Instalasi & Cara Menjalankan
+
+1. Clone repositori ini.
+2. Pastikan file `application.properties` sudah dikonfigurasi dengan database MySQL lokal Anda.
+3. Jalankan perintah:
+   ```bash
+   mvn spring-boot:run
+   ```
+4. Aplikasi akan berjalan di `http://localhost:8080`.
