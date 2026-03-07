@@ -10,5 +10,6 @@ import java.util.Optional;
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     Optional<Category> findByName(String name);
 
+    //untuk mengecek apakah sebuah nama kategori sudah terdaftar atau belum di database
     boolean existsByName(String name);
 }

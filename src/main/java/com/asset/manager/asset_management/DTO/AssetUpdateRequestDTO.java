@@ -11,13 +11,10 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-// untuk detail Asset
-public class AssetResponseDTO {
-    private Long id; // Penting untuk tracking
-    private String serialNumber;
+public class AssetUpdateRequestDTO {
     private String name;
     private String imagePath;
-    private String status;
-    private String categoryName; // Lebih praktis untuk tampilan
-    private LocalDate nextMaintenanceDate;
+    private LocalDate purchaseDate;
+    private Integer maintenanceFrequency; // dalam bulan
+    private Long categoryId; // Cukup kirim ID-nya saja
 }

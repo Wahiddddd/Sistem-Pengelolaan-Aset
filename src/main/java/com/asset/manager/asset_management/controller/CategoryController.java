@@ -20,31 +20,40 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
+    // Menambahkan Kategori Baru
     @PostMapping
     public ResponseEntity<CategoryResponseDTO> createCategory(@Valid @RequestBody CategoryRequestDTO dto) {
         CategoryResponseDTO response = categoryService.createCategory(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    // Mengambil Semua Daftar Kategori
     @GetMapping
     public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
         return ResponseEntity.ok(categoryService.getAllCategories());
     }
 
+    // Mengambil Detail Kategori berdasarkan ID
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponseDTO> getCategoryById(@PathVariable Long id) {
+        // Digunakan untuk melihat detail spesifik satu kategori
         return ResponseEntity.ok(categoryService.getCategoryById(id));
     }
 
+    // Mengubah Nama Kategori
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponseDTO> updateCategory(@PathVariable Long id,
             @Valid @RequestBody CategoryRequestDTO dto) {
+        // Memperbarui informasi kategori yang sudah ada
         return ResponseEntity.ok(categoryService.updateCategory(id, dto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        // Menghapus kategori dari sistem
+        // Di Service sudah ada proteksi agar kategori yang masih memiliki aset tidak bisa dihapus
         categoryService.deleteCategory(id);
+        // Mengembalikan status 204 No Content sebagai tanda berhasil
         return ResponseEntity.noContent().build();
     }
 }

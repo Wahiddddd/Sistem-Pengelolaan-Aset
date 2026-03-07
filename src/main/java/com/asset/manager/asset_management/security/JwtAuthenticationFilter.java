@@ -32,13 +32,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain) throws ServletException, IOException {
 
         try {
+            // 1. Ambil token dari Header Authorization
             String jwt = parseJwt(request);
             if (jwt != null) {
+                // 2. Ekstrak username dari dalam token
                 String username = jwtUtil.extractUsername(jwt);
 
+                // 3. Jika username ada dan belum ada data autentikasi di sistem
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
+                    // 4. Validasi apakah token tersebut asli dan belum kedaluwarsa
                     if (jwtUtil.validateToken(jwt, userDetails)) {
                         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities());
@@ -52,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             logger.error("Cannot set user authentication: {}", e);
         }
-
+        // Lanjutkan request ke filter berikutnya atau ke Controller
         filterChain.doFilter(request, response);
     }
 

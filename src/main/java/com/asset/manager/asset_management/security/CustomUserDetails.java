@@ -18,9 +18,11 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Mengonversi Enum Role kita menjadi format yang dimengerti Spring Security
         return Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name()));
     }
 
+    // Mengambil password dari database untuk divalidasi Spring Security
     @Override
     public String getPassword() {
         return user.getPassword();
@@ -38,6 +40,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
+        // Mengecek apakah kolom lockedUntil kosong atau sudah melewati waktu sekarang
         return user.getLockedUntil() == null || user.getLockedUntil().isBefore(java.time.LocalDateTime.now());
     }
 
@@ -48,6 +51,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
+        // Akun hanya aktif jika belum dihapus (Soft Delete)
         return !user.isDeleted();
     }
 

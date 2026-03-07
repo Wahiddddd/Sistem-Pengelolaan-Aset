@@ -18,9 +18,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // Mencari user berdasarkan username DAN pastikan belum dihapus
         User user = userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
+        // Mengembalikan user dalam bentuk CustomUserDetails
         return new CustomUserDetails(user);
     }
 }

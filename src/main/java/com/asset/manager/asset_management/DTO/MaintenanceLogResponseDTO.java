@@ -1,6 +1,5 @@
 package com.asset.manager.asset_management.DTO;
 
-import com.asset.manager.asset_management.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

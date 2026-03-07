@@ -21,42 +21,44 @@ public class UserController {
         this.userService = userService;
     }
 
-    // 1. CREATE USER
+    // Membuat User Baru (Admin Only)
     @PostMapping
     public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO dto) {
         UserResponseDTO response = userService.createUser(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // 2. GET USER BY ID
+    // Mengambil Detail User berdasarkan ID
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id) {
         UserResponseDTO response = userService.getUserById(id);
         return ResponseEntity.ok(response);
     }
 
-    // 3. GET ALL USERS (Pagination)
+    // Mengambil Semua Daftar User (Dengan Pagination)
     @GetMapping
     public ResponseEntity<Page<UserResponseDTO>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
+        // Memastikan performa backend tetap stabil dengan membagi daftar user ke dalam beberapa halaman.
         Pageable pageable = PageRequest.of(page, size);
         Page<UserResponseDTO> response = userService.getAllUsers(pageable);
         return ResponseEntity.ok(response);
     }
 
-    // 4. UPDATE USER
+    // Memperbarui Data User
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDTO> updateUser(
             @PathVariable Long id,
             @Valid @RequestBody UserRequestDTO dto) {
 
+        // Digunakan untuk mengubah username, NIK, Role, atau mereset password user.
         UserResponseDTO response = userService.updateUser(id, dto);
         return ResponseEntity.ok(response);
     }
 
-    // 5. DELETE USER
+    // Menghapus User (Soft Delete)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);

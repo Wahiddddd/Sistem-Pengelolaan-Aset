@@ -1,11 +1,19 @@
 package com.asset.manager.asset_management.service;
 
+import com.asset.manager.asset_management.DTO.AssetSimpleResponse;
 import com.asset.manager.asset_management.DTO.MaintenanceLogRequestDTO;
 import com.asset.manager.asset_management.DTO.MaintenanceLogResponseDTO;
 import com.asset.manager.asset_management.entity.*;
 import com.asset.manager.asset_management.repository.AssetRepository;
 import com.asset.manager.asset_management.repository.MaintenanceLogRepository;
 import com.asset.manager.asset_management.repository.UserRepository;
+import com.asset.manager.asset_management.exception.BusinessException;
+import com.asset.manager.asset_management.exception.ResourceNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +23,8 @@ import java.util.List;
 
 @Service
 public class MaintenanceLogService {
+    private static final Logger log = LoggerFactory.getLogger(MaintenanceLogService.class);
+
     private final MaintenanceLogRepository logRepository;
     private final AssetRepository assetRepository;
     private final UserRepository userRepository;
@@ -27,60 +37,70 @@ public class MaintenanceLogService {
     }
 
     @Transactional
-    public void startMaintenance(Long assetId, Long technicianId) {
+    public void startMaintenance(Long assetId, String username) {
 
+        log.info("Technician {} attempting to start maintenance for assetId={}", username, assetId);
+
+        // Validasi Aset
         Asset asset = assetRepository.findById(assetId)
-                .orElseThrow(() -> new RuntimeException("Asset not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found with id: " + assetId));
 
-        User technician = userRepository.findById(technicianId)
-                .orElseThrow(() -> new RuntimeException("Technician not found"));
+        // Validasi Teknisi
+        User technician = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Technician not found with username: " + username));
 
-        // Validasi role
-        if (!technician.getRole().equals(UserRole.ROLE_TEKNISI)) {
-            throw new RuntimeException("User is not a technician");
+        if (!technician.getRole().equals(UserRole.ROLE_TEKNISI) && !technician.getRole().equals(UserRole.ROLE_ADMIN)) {
+            log.warn("User {} tried to start maintenance but has insufficient permissions", username);
+            throw new BusinessException("User does not have permission to start maintenance");
         }
 
-        // Cek apakah asset memang butuh maintenance
         if (asset.getStatus() != AssetStatus.NEEDS_MAINTENANCE) {
-            throw new RuntimeException("Asset is not available for maintenance");
+            log.warn("Asset {} is not available for maintenance. Current status={}", assetId, asset.getStatus());
+            throw new BusinessException(
+                    "Asset is not available for maintenance. Current status is " + asset.getStatus());
         }
 
         // Cek apakah asset sedang dikerjakan orang lain
         if (logRepository.findByAssetIdAndEndTimeIsNull(assetId).isPresent()) {
-            throw new RuntimeException("Asset already in maintenance");
+            log.warn("Asset {} already in maintenance by another technician", assetId);
+            throw new BusinessException("Asset is already in maintenance");
         }
 
-        // Cek teknisi tidak boleh ambil 2 tugas
-        if (logRepository.findByTechnicianIdAndEndTimeIsNull(technicianId).isPresent()) {
-            throw new RuntimeException("Technician still has unfinished maintenance");
+        // Cek teknisi masih punya tugas
+        if (logRepository.findByTechnicianIdAndEndTimeIsNull(technician.getId()).isPresent()) {
+            log.warn("Technician {} still has unfinished maintenance", username);
+            throw new BusinessException("You still have an unfinished maintenance task");
         }
 
         // Update status asset
         asset.setStatus(AssetStatus.IN_MAINTENANCE);
 
-        // Buat log baru
-        MaintenanceLog log = new MaintenanceLog();
-        log.setAsset(asset);
-        log.setTechnician(technician);
-        log.setStartTime(LocalDateTime.now());
+        MaintenanceLog logEntity = new MaintenanceLog();
+        logEntity.setAsset(asset);
+        logEntity.setTechnician(technician);
+        logEntity.setStartTime(LocalDateTime.now());
 
-        logRepository.save(log);
+        logRepository.save(logEntity);
         assetRepository.save(asset);
+
+        log.info("Maintenance started successfully. assetId={}, technician={}", assetId, username);
     }
 
     // SELESAI MAINTENANCE (NORMAL)
     @Transactional
     public MaintenanceLogResponseDTO finishMaintenance(Long assetId,
             MaintenanceLogRequestDTO dto) {
+        log.info("Finishing maintenance for assetId: {}. Description: {}, Cost: {}", assetId, dto.getDescription(),
+                dto.getCost());
 
         Asset asset = assetRepository.findById(assetId)
-                .orElseThrow(() -> new RuntimeException("Asset not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Asset not found"));
 
         MaintenanceLog log = logRepository
                 .findByAssetIdAndEndTimeIsNull(assetId)
                 .orElseThrow(() -> new RuntimeException("No active maintenance found"));
 
-        // Update log
+        // membuat validasi log, Update log
         log.setDescription(dto.getDescription());
         log.setCost(dto.getCost());
         log.setPhotoBefore(dto.getPhotoBefore());
@@ -90,13 +110,14 @@ public class MaintenanceLogService {
         // Update status asset menjadi ACTIVE
         asset.setStatus(AssetStatus.ACTIVE);
 
-        // Hitung next maintenance dari tanggal selesai
+        // Menghitung ulang jadwal maintenance berikutnya dari tanggal SEKARANG
         if (asset.getMaintenanceFrequency() != null) {
             asset.setNextMaintenanceDate(
                     log.getEndTime().toLocalDate()
                             .plusMonths(asset.getMaintenanceFrequency()));
         }
 
+        // save & return
         logRepository.save(log);
         assetRepository.save(asset);
 
@@ -106,6 +127,7 @@ public class MaintenanceLogService {
     // Jika aset rusak
     @Transactional
     public void markAsBroken(Long assetId) {
+        log.warn("Marking assetId: {} as BROKEN during maintenance", assetId);
 
         Asset asset = assetRepository.findById(assetId)
                 .orElseThrow(() -> new RuntimeException("Asset not found"));
@@ -132,6 +154,35 @@ public class MaintenanceLogService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public Page<AssetSimpleResponse> getAssetsForMaintenance(Pageable pageable) {
+
+        return assetRepository
+                .findByStatus(AssetStatus.NEEDS_MAINTENANCE, pageable)
+                .map(this::mapToSimpleResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MaintenanceLogResponseDTO> getAllMaintenanceLogs(Pageable pageable) {
+
+        return logRepository.findAllByOrderByStartTimeDesc(pageable)
+                .map(this::mapToResponseDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MaintenanceLogResponseDTO> searchMaintenanceLogs(String serialNumber, Pageable pageable) {
+
+        Page<MaintenanceLog> logs = logRepository.findByAssetSerialNumberContainingIgnoreCase(serialNumber, pageable);
+
+        if (logs.isEmpty()) {
+            log.warn("Maintenance logs not found for serial number: {}", serialNumber);
+        } else {
+            log.info("Found {} maintenance logs for serial number: {}", logs.getTotalElements(), serialNumber);
+        }
+
+        return logs.map(this::mapToResponseDTO);
+    }
+
     // Helper method untuk Mapping Entity -> DTO
     private MaintenanceLogResponseDTO mapToResponseDTO(MaintenanceLog log) {
 
@@ -144,7 +195,21 @@ public class MaintenanceLogService {
         res.setDescription(log.getDescription());
         res.setCost(log.getCost());
         res.setPhotoAfter(log.getPhotoAfter());
-        res.setStatusAsetSekarang(log.getAsset().getStatus().name());
+        res.setStatusAsetSekarang(log.getAsset().getStatus() != null ? log.getAsset().getStatus().name() : null);
+
+        return res;
+    }
+
+    private AssetSimpleResponse mapToSimpleResponse(Asset a) {
+        AssetSimpleResponse res = new AssetSimpleResponse();
+        res.setId(a.getId());
+        res.setSerialNumber(a.getSerialNumber());
+        res.setName(a.getName());
+        res.setStatus(a.getStatus() != null ? a.getStatus().name() : null);
+
+        if (a.getCategory() != null) {
+            res.setCategoryName(a.getCategory().getName());
+        }
 
         return res;
     }

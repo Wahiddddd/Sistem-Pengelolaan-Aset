@@ -17,12 +17,20 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    // Must be at least 256 bits (32 bytes) for HS256
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    @Value("${jwt.secret:ini_adalah_kunci_rahasia_yang_sangat_aman_dan_panjang_sekali_minimal_32_karakter}")
+    private String secretKey;
+
+    private Key key;
+
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
+    }
 
     @Value("${jwt.expiration:86400000}") // Default 24 hours
     private long jwtExpiration;
 
+    // Fungsi utama membuat token baru saat user berhasil login
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         return createToken(claims, userDetails.getUsername());
@@ -38,11 +46,13 @@ public class JwtUtil {
                 .compact();
     }
 
+    // Memeriksa apakah token valid: username cocok & belum expired
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
+    // Fungsi untuk membongkar isi token
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -58,7 +68,7 @@ public class JwtUtil {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(key)
+                .setSigningKey(key) // Harus pakai kunci yang sama saat token dibuat
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

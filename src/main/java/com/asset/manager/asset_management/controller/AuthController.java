@@ -27,9 +27,9 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
+    // Endpoint Login: Mengubah kredensial menjadi Token
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> authenticateUser(@Valid @RequestBody AuthRequestDTO loginRequest) {
-
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),

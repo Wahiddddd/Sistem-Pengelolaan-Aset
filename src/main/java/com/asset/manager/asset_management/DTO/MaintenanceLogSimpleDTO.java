@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 @Builder
 public class MaintenanceLogSimpleDTO {
     private Long id; // Untuk navigasi ke detail
-    private String assetName; // Tambahan: Nama aset yang diservis
+    private String assetName; // Nama aset yang diservis
     private LocalDateTime startTime;
     private BigDecimal cost;
-    private String technicianName; // Tambahan: Siapa yang mengerjakan
+    private String technicianName; // Siapa yang mengerjakan
 }

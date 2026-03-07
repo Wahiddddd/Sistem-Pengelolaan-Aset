@@ -11,10 +11,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import com.asset.manager.asset_management.exception.BusinessException;
+import com.asset.manager.asset_management.exception.ResourceNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // Siap untuk JWT nanti
@@ -29,22 +35,23 @@ public class UserService {
 
     @Transactional
     public UserResponseDTO createUser(UserRequestDTO dto) {
+        log.info("Creating new user with username: {} and role: {}", dto.getUsername(), dto.getRole());
 
         // Cek duplicate username
         if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new BusinessException("Username already exists: " + dto.getUsername());
         }
 
         // Cek duplicate NIK
         if (userRepository.findByNik(dto.getNik()).isPresent()) {
-            throw new RuntimeException("NIK already exists");
+            throw new BusinessException("NIK already exists: " + dto.getNik());
         }
 
         User user = new User();
         user.setUsername(dto.getUsername());
         user.setNik(dto.getNik());
 
-        // Encrypt password
+        // Encrypt password, Password disimpan dalam bentuk hash (BCrypt)
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         user.setRole(dto.getRole());
@@ -62,7 +69,7 @@ public class UserService {
     public UserResponseDTO getUserById(Long id) {
 
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
         return mapToResponseDTO(user);
     }
@@ -80,6 +87,7 @@ public class UserService {
 
     @Transactional
     public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
+        log.info("Updating user with ID: {}. New username: {}, New role: {}", id, dto.getUsername(), dto.getRole());
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -87,7 +95,7 @@ public class UserService {
         // Cek duplicate username (kecuali dirinya sendiri)
         Optional<User> existing = userRepository.findByUsername(dto.getUsername());
         if (existing.isPresent() && !existing.get().getId().equals(id)) {
-            throw new RuntimeException("Username already used");
+            throw new BusinessException("Username " + dto.getUsername() + " is already used by another user");
         }
 
         user.setUsername(dto.getUsername());
@@ -106,17 +114,18 @@ public class UserService {
 
     @Transactional
     public void deleteUser(Long id) {
+        log.info("Attempting to delete user with ID: {}", id);
 
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
         userRepository.delete(user); // Karena sudah pakai @SQLDelete
     }
 
-    // HANDLE FAILED LOGIN (UNTUK JWT NANTI)
-
+    // Fitur Keamanan: Mengunci akun jika gagal login 5 kali
     @Transactional
     public void increaseFailedAttempts(String username) {
+        log.warn("Increasing failed login attempts for user: {}", username);
 
         User user = userRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -124,7 +133,7 @@ public class UserService {
         int attempts = user.getFailedAttempts() + 1;
         user.setFailedAttempts(attempts);
 
-        if (attempts >= 3) {
+        if (attempts >= 5) {
             user.setLockedUntil(LocalDateTime.now().plusMinutes(15));
         }
 
