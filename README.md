@@ -1,10 +1,10 @@
-﻿# 🏗️ Sistem Pengelolaan Aset (Asset Management System)
+﻿# Sistem Pengelolaan Aset (Asset Management System)
 
 Sistem Pengelolaan Aset adalah aplikasi berbasis Spring Boot yang dirancang untuk membantu perusahaan dalam mengelola siklus hidup aset secara efisien, mulai dari pendataan, monitoring status, hingga pencatatan log pemeliharaan secara otomatis dan terintegrasi.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 Aplikasi ini dibangun menggunakan teknologi modern untuk memastikan performa dan keamanan yang optimal:
 
@@ -17,7 +17,7 @@ Aplikasi ini dibangun menggunakan teknologi modern untuk memastikan performa dan
 
 ---
 
-## 📋 Fitur Utama
+## Fitur Utama
 
 - **Manajemen User (RBAC):** Dukungan multi-role (Super Admin, Admin, dan Teknisi) dengan fitur keamanan *Auto-lock account* setelah 5 kali gagal login.
 - **Manajemen Inventaris:** Admin dapat mengelola data aset, kategori, dan mencari aset berdasarkan nomor seri unik.
@@ -43,7 +43,7 @@ src/main/java/com/asset/manager/asset_management/
 
 ---
 
-## 🔄 Flow Business (Alur Bisnis)
+## Flow Business (Alur Bisnis)
 
 Berikut adalah visualisasi alur kerja dalam sistem ini:
 
@@ -69,7 +69,7 @@ Teknisi memproses aset yang membutuhkan servis dan mencatat riwayat pengerjaan.
 
 ---
 
-## 🗄️ Desain Database
+## Desain Database
 
 Struktur database dirancang untuk mendukung relasi yang kompleks antara aset, kategori, dan log pemeliharaan.
 
@@ -82,32 +82,49 @@ Struktur database dirancang untuk mendukung relasi yang kompleks antara aset, ka
 
 ---
 
-## 🚀 API Endpoints
+## API Endpoints
 
 Aplikasi menyediakan RESTful API yang dapat diakses melalui endpoint berikut:
 
 ### 1. User API (`/api/users`)
-- `POST /` : Registrasi User baru.
-- `GET /` : Daftar semua User (Pagination).
-- `PUT /{id}` : Update data User.
+- `POST /api/users` : Membuat User Baru (Admin Only)
+- `GET /api/users` : Mengambil Semua Daftar User (Dengan Pagination)
+- `GET /api/users/{id}` : Mengambil Detail User berdasarkan ID
+- `PUT /api/users/{id}` : Memperbarui Data User
+- `DELETE /api/users/{id}` : Menghapus User (Soft Delete)
 
 ### 2. Category API (`/api/categories`)
-- `POST /` : Tambah Kategori baru.
-- `GET /` : Daftar semua Kategori.
+- `POST /api/categories` : Menambahkan Kategori Baru
+- `GET /api/categories` : Mengambil Semua Daftar Kategori
+- `GET /api/categories/{id}` : Mengambil Detail Kategori berdasarkan ID
+- `PUT /api/categories/{id}` : Mengubah Nama Kategori
+- `DELETE /api/categories/{id}` : Menghapus Kategori
 
 ### 3. Asset API (`/api/assets`)
-- `POST /` : Tambah Aset baru.
-- `GET /due-maintenance` : Daftar aset yang mendekati jadwal servis.
-- `GET /{id}` : Detail Aset berdasarkan ID.
+- `POST /api/assets` : Menambahkan Aset Baru
+- `GET /api/assets` : Mengambil Semua Daftar Aset (Dengan Pagination)
+- `GET /api/assets/{id}` : Mengambil Detail Satu Aset berdasarkan ID
+- `GET /api/assets/due-maintenance` : Mengambil Daftar Aset yang Mendekati/Sudah Jatuh Tempo Maintenance
+- `GET /api/assets/search` : Mencari Aset berdasarkan Keyword
+- `PUT /api/assets/{id}` : Mengubah/Update Data Aset
+- `DELETE /api/assets/{id}` : Menghapus Aset (Soft Delete)
 
 ### 4. Maintenance API (`/api/maintenance`)
-- `POST /start/{assetId}/technician/{technicianId}` : Mulai proses perbaikan.
-- `POST /finish/{assetId}` : Selesaikan perbaikan dan catat log.
-- `POST /broken/{assetId}` : Tandai aset sebagai rusak total.
+- `POST /api/maintenance/start/{assetId}` : Memulai Proses Maintenance
+- `POST /api/maintenance/finish/{assetId}` : Menyelesaikan Maintenance
+- `POST /api/maintenance/broken/{assetId}` : Melaporkan Aset Rusak Total
+- `POST /api/maintenance/force-test/{assetId}` : Memaksa Aset ke Status NEEDS_MAINTENANCE (Testing)
+- `GET /api/maintenance/asset/{assetId}` : Riwayat Maintenance per Aset
+- `GET /api/maintenance/maintenance-logs` : Mengambil Semua Histori Maintenance (Pagination)
+- `GET /api/maintenance/maintenance-logs/search` : Mencari Histori Maintenance berdasarkan Serial Number
+- `GET /api/maintenance/assets-for-maintenance` : Mengambil Aset yang Membutuhkan Maintenance
+
+### 5. Auth API (`/api/auth`)
+- `POST /api/auth/login` : Endpoint Login (Mengubah Kredensial Menjadi Token)
 
 ---
 
-## ⚙️ Instalasi & Cara Menjalankan
+## Instalasi & Cara Menjalankan
 
 1. Clone repositori ini.
 2. Pastikan file `application.properties` sudah dikonfigurasi dengan database MySQL lokal Anda.

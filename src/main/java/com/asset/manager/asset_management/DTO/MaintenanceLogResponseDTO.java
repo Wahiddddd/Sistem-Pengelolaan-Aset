@@ -20,6 +20,7 @@ public class MaintenanceLogResponseDTO {
     private LocalDateTime endTime;
     private String description;
     private BigDecimal cost;
+    private String photoBefore;
     private String photoAfter;
 
     private String statusAsetSekarang;

@@ -109,6 +109,15 @@ public class AssetService {
                 .map(this::mapToSimpleResponse);
     }
 
+    @Transactional
+    public AssetResponseDTO updateImagePath(Long id, String imagePath) {
+        log.info("Updating image path for asset ID: {}", id);
+        Asset asset = assetRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found with id: " + id));
+        asset.setImagePath(imagePath);
+        return mapToResponseDTO(assetRepository.save(asset));
+    }
+
     @Transactional(readOnly = true)
     public AssetResponseDTO getAssetById(Long id) {
         Asset asset = assetRepository.findById(id)

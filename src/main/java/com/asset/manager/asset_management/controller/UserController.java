@@ -41,7 +41,8 @@ public class UserController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        // Memastikan performa backend tetap stabil dengan membagi daftar user ke dalam beberapa halaman.
+        // Memastikan performa backend tetap stabil dengan membagi daftar user ke dalam
+        // beberapa halaman.
         Pageable pageable = PageRequest.of(page, size);
         Page<UserResponseDTO> response = userService.getAllUsers(pageable);
         return ResponseEntity.ok(response);

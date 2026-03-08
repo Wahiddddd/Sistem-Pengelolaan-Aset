@@ -183,6 +183,48 @@ public class MaintenanceLogService {
         return logs.map(this::mapToResponseDTO);
     }
 
+    @Transactional
+    public MaintenanceLogResponseDTO updateActivePhoto(String assetIdentifier, String filePath, boolean isBefore) {
+        log.info("Updating active photo for asset: {}. Is before: {}", assetIdentifier, isBefore);
+
+        Asset asset;
+        if (assetIdentifier.matches("\\d+")) {
+            asset = assetRepository.findById(Long.parseLong(assetIdentifier))
+                    .orElseThrow(() -> new ResourceNotFoundException("Asset not found with ID: " + assetIdentifier));
+        } else {
+            asset = assetRepository.findBySerialNumber(assetIdentifier)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Asset not found with Serial Number: " + assetIdentifier));
+        }
+
+        MaintenanceLog logEntity = logRepository.findByAssetIdAndEndTimeIsNull(asset.getId())
+                .orElseThrow(
+                        () -> new BusinessException("Tidak ada proses maintenance yang sedang aktif untuk aset ini."));
+
+        if (isBefore) {
+            logEntity.setPhotoBefore(filePath);
+        } else {
+            logEntity.setPhotoAfter(filePath);
+        }
+
+        return mapToResponseDTO(logRepository.save(logEntity));
+    }
+
+    @Transactional
+    public MaintenanceLogResponseDTO updatePhoto(Long logId, String filePath, boolean isBefore) {
+        log.info("Updating photo for logId: {}. Is before: {}", logId, isBefore);
+        MaintenanceLog logEntity = logRepository.findById(logId)
+                .orElseThrow(() -> new ResourceNotFoundException("Maintenance log not found with id: " + logId));
+
+        if (isBefore) {
+            logEntity.setPhotoBefore(filePath);
+        } else {
+            logEntity.setPhotoAfter(filePath);
+        }
+
+        return mapToResponseDTO(logRepository.save(logEntity));
+    }
+
     // Helper method untuk Mapping Entity -> DTO
     private MaintenanceLogResponseDTO mapToResponseDTO(MaintenanceLog log) {
 
@@ -194,6 +236,7 @@ public class MaintenanceLogService {
         res.setEndTime(log.getEndTime());
         res.setDescription(log.getDescription());
         res.setCost(log.getCost());
+        res.setPhotoBefore(log.getPhotoBefore());
         res.setPhotoAfter(log.getPhotoAfter());
         res.setStatusAsetSekarang(log.getAsset().getStatus() != null ? log.getAsset().getStatus().name() : null);
 

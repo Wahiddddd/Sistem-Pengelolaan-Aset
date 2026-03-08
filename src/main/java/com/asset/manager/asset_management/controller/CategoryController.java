@@ -51,7 +51,8 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         // Menghapus kategori dari sistem
-        // Di Service sudah ada proteksi agar kategori yang masih memiliki aset tidak bisa dihapus
+        // Di Service sudah ada proteksi agar kategori yang masih memiliki aset tidak
+        // bisa dihapus
         categoryService.deleteCategory(id);
         // Mengembalikan status 204 No Content sebagai tanda berhasil
         return ResponseEntity.noContent().build();

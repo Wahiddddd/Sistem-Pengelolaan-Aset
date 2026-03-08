@@ -44,6 +44,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // Login / Register
+                        .requestMatchers("/uploads/**").permitAll() // Akses Gambar
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/categories/**")
                         .hasAnyRole("ADMIN", "TEKNISI")
