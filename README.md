@@ -132,4 +132,4 @@ Aplikasi menyediakan RESTful API yang dapat diakses melalui endpoint berikut:
    ```bash
    mvn spring-boot:run
    ```
-4. Aplikasi akan berjalan di `http://localhost:8080`.
+4. Aplikasi akan berjalan di `http://localhost:8080`..
