@@ -61,7 +61,7 @@ Fitur untuk melihat daftar aset dan melakukan pembaruan data secara berkala.
 
 ### 4. Laporan Maintenance (Admin)
 Admin dapat memantau laporan pemeliharaan aset dari semua teknisi.
-![Flowchart Laporan](flow_chart/Dashboard%20Teknisi%20(Maintenance)-Flow%20Chart(Admin(Laporan%20Maintenence))).drawio.png)
+![Flowchart Laporan](flow_chart/Dashboard%20Teknisi%20%28Maintenance%29-Flow%20Chart%28Admin%28Laporan%20Maintenence%29%29%29.drawio.png)
 
 ### 5. Alur Kerja Pemeliharaan (Teknisi)
 Teknisi memproses aset yang membutuhkan servis dan mencatat riwayat pengerjaan.
